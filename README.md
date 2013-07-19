@@ -1,10 +1,17 @@
 # high-c
 
-A Clojure library designed to ... well, that part is up to you.
+A Clojure interface for communicating with 37signals' Highrise API.
+
+## Install
+
+Add to Lein's dependencies:
+
+```
+[[high-c "0.1.0"]]
+```
 
 ## Usage
 
-FIXME
 
 ## License
 
