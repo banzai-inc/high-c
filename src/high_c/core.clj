@@ -1,6 +1,12 @@
-(ns high-c.core)
+(ns high-c.core
+  (:require [clj-http.client :as client]))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(defprotocol Highrise
+  (search [this q auth] "Search highrise"))
+
+(defrecord Company []
+  Highrise
+  (search [this q auth]
+    q))
+
+(def company (Company.))

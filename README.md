@@ -12,6 +12,14 @@ Add to Lein's dependencies:
 
 ## Usage
 
+```clojure
+(require '[high-c.core :as high])
+
+(def auth {:domain "banzai.highrisehq.com"
+           :token "abcd1234"})
+
+(search high/company "Your Company")
+```
 
 ## License
 
