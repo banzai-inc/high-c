@@ -22,13 +22,6 @@
                              endpoint "/search.xml?term=" q)
                         {:basic-auth [(:token auth) "X"]})))
 
-;; Constructors
-
-(defn new-company
-  "Constructor method for Company"
-  [id name phone-number]
-  (Company. id name phone-number))
- 
 (defprotocol Highrise
   (search [this q auth] "Search Highrise by item name"))
 
@@ -38,9 +31,9 @@
     (let [tree (search* "companies" q auth)
           companies (d/xml-> tree :company)]
       (for [company companies]
-        (new-company (first (d/xml-> company :id d/text))
-                     (first (d/xml-> company :name d/text))
-                     (first (d/xml-> company :phone-number d/text)))))))
+        (Company. (first (d/xml-> company :id d/text))
+                  (first (d/xml-> company :name d/text))
+                  (first (d/xml-> company :phone-number d/text)))))))
 
 (def company (Company. nil nil nil))
 
