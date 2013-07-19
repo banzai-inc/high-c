@@ -6,7 +6,7 @@ A Clojure interface for communicating with 37signals' Highrise API.
 
 Add to Lein's dependencies:
 
-```
+```clojure
 [[high-c "0.1.0"]]
 ```
 
@@ -18,11 +18,11 @@ Add to Lein's dependencies:
 (def auth {:domain "banzai.highrisehq.com"
            :token "abcd1234"})
 
-(search high/company "Your Company")
+(high/search high/company "Your Company" auth)
 ```
 
 ## License
 
-Copyright © 2013 FIXME
+Copyright © 2013 Banzai, Inc.
 
 Distributed under the Eclipse Public License, the same as Clojure.
