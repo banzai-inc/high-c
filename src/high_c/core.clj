@@ -25,14 +25,24 @@
 (defprotocol Highrise
   (search [this q auth] "Search Highrise by item name"))
 
-(defrecord Company []
+(defrecord Company [id name phone-number]
   Highrise
   (search [this q auth]
     (let [tree (search* "companies" q auth)
           companies (d/xml-> tree :company)]
       (for [company companies]
-        {:id (first (d/xml-> company :id d/text))
-         :name (first (d/xml-> company :name d/text))
-         :phone-number (first (d/xml-> company :phone-number d/text))}))))
+        (new-company (first (d/xml-> company :id d/text))
+                     (first (d/xml-> company :name d/text))
+                     (first (d/xml-> company :phone-number d/text)))))))
 
-(def company (Company.))
+(def company (Company. nil nil nil))
+
+(defn new-company
+  "Constructor method for Company"
+  [id name phone-number]
+  (Company. id name phone-number))
+ 
+;; (def banzai-auth {:domain "banzai.highrisehq.com"
+;;                   :token "9c445b6df35b450bd3030ec129452686"})
+;; 
+;; (search company "Mountain America" banzai-auth)
