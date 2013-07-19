@@ -22,6 +22,13 @@
                              endpoint "/search.xml?term=" q)
                         {:basic-auth [(:token auth) "X"]})))
 
+;; Constructors
+
+(defn new-company
+  "Constructor method for Company"
+  [id name phone-number]
+  (Company. id name phone-number))
+ 
 (defprotocol Highrise
   (search [this q auth] "Search Highrise by item name"))
 
@@ -37,11 +44,6 @@
 
 (def company (Company. nil nil nil))
 
-(defn new-company
-  "Constructor method for Company"
-  [id name phone-number]
-  (Company. id name phone-number))
- 
 ;; (def banzai-auth {:domain "banzai.highrisehq.com"
 ;;                   :token "9c445b6df35b450bd3030ec129452686"})
 ;; 
