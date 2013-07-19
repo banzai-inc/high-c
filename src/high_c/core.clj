@@ -22,16 +22,22 @@
                              endpoint "/search.xml?term=" q)
                         {:basic-auth [(:token auth) "X"]})))
 
-(defprotocol Highrise
+(def ^{:private true} company-endpoint "companies")
+
+(defprotocol HighriseItem
+  (url [this auth] "Return URL for Highrise item") 
   (search [this q auth] "Search Highrise by item name"))
 
 (defrecord Company [id name phone-number]
-  Highrise
+  HighriseItem
+  (url [this auth]
+    (str (highrise-url auth) company-endpoint "/" (.id this)))
   (search [this q auth]
-    (let [tree (search* "companies" q auth)
+    "Search companies. Returns a vector of companies."
+    (let [tree (search* company-endpoint q auth)
           companies (d/xml-> tree :company)]
       (for [company companies]
-        (Company. (first (d/xml-> company :id d/text))
+        (Company. (Integer/parseInt (first (d/xml-> company :id d/text)))
                   (first (d/xml-> company :name d/text))
                   (first (d/xml-> company :phone-number d/text)))))))
 
