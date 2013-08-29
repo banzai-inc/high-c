@@ -7,7 +7,7 @@ A Clojure interface for communicating with 37signals' Highrise API.
 Add to Lein's dependencies:
 
 ```clojure
-[[high-c "0.1.6"]]
+[[high-c "0.1.7"]]
 ```
 
 ## Usage
