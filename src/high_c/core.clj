@@ -91,9 +91,9 @@
      :first-name (grab tree :first-name)   
      :last-name (grab tree :last-name)   
      :contact-data {:email-addresses (for [ea (d/xml-> tree :contact-data :email-addresses :email-address)]
-                                       {:id (Integer/parseInt (grab ea :id))
-                                        :address (grab ea :address)
-                                        :location (grab ea :location)})}}))
+                                       {:email-address {:id (Integer/parseInt (grab ea :id))
+                                                        :address (grab ea :address)
+                                                        :location (grab ea :location)}})}}))
 
 (defrecord Person []
   HighriseItem
