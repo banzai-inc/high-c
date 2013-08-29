@@ -22,11 +22,11 @@ Add to Lein's dependencies:
 
 user=> (#high_c.core.Company{:id "66091540", :name "Your Company", :phone-number nil})
 
-(h/url (first (companies)))
+(h/url (first (companies)) auth)
 
 user=> "https://banzai.highrisehq.com/companies/66091540"
 
-(h/fetch-by-company h/person 1)
+(h/fetch-by-company h/person 1 auth)
 
 user=> (#high_c.core.Person{...}
 ```
