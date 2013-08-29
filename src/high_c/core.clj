@@ -7,6 +7,9 @@
 (defn- highrise-url [auth]
   (str "https://" (:domain auth) "/"))
 
+(def ^{:private true} company-endpoint "companies")
+(def ^{:private true} people-endpoint "people")
+
 (defn- basic-auth
   "Basic authentication headers"
   [auth]
@@ -42,9 +45,6 @@
     (client/get (str (highrise-url auth) company-endpoint "/"
                      id "/" endpoint ".xml")
                 (basic-auth auth))))
-
-(def ^{:private true} company-endpoint "companies")
-(def ^{:private true} people-endpoint "people")
 
 (defn- new-entities
   [tree f entity]
