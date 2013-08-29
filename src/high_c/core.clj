@@ -61,6 +61,7 @@
   (fetch-by-company [this id auth] "Get Highrise collection of entities by company."))
 
 (declare ->Company)
+(declare ->Person)
 
 (defn new-company
   [tree]
@@ -101,7 +102,7 @@
 
 (def person (->Person))
 
-(fetch-by-company (->Person) (:id c) banzai-auth)
+;; (fetch-by-company (->Person) (:id c) banzai-auth)
 ;; 
 ;; (require '[environ.core :refer :all])
 ;; (def banzai-auth {:domain (env :highrise-domain)
