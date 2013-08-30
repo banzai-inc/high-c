@@ -98,7 +98,9 @@
 (defrecord Person []
   HighriseItem
   (fetch-by-company [_ id auth]
-    (new-entities (fetch-by-company* people-endpoint id auth) new-person :person)))
+    (new-entities (fetch-by-company* people-endpoint id auth) new-person :person))
+  (fetch [_ id auth]
+    (new-person (fetch* people-endpoint id auth))))
 
 (def person (->Person))
 

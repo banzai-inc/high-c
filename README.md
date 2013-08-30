@@ -29,6 +29,8 @@ user=> "https://banzai.highrisehq.com/companies/66091540"
 (h/fetch-by-company h/person 1 auth)
 
 user=> (#high_c.core.Person{...}
+
+(h/fetch h/person 1 auth)
 ```
 
 ## License
