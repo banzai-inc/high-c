@@ -74,7 +74,7 @@
 (defrecord Company []
   HighriseItem
   (url [this auth]
-    (str (highrise-url auth) company-endpoint "/" (.id this)))
+    (str (highrise-url auth) company-endpoint "/" (:id this)))
   (search [_ q auth]
     "Search companies. Returns a vector of companies."
     (new-entities (search* company-endpoint q auth) new-company :company))
@@ -110,3 +110,4 @@
 ;; (def banzai-auth {:domain (env :highrise-domain)
 ;;                   :token (env :highrise-token)})
 ;; (def c (first (search company "Mountain America" banzai-auth)))
+;; (url c banzai-auth)
