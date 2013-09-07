@@ -7,7 +7,7 @@ A Clojure interface for communicating with 37signals' Highrise API.
 Add to Lein's dependencies:
 
 ```clojure
-[[high-c "0.1.7"]]
+[[high-c "0.2.3"]]
 ```
 
 ## Usage
@@ -31,6 +31,8 @@ user=> "https://banzai.highrisehq.com/companies/66091540"
 user=> (#high_c.core.Person{...}
 
 (h/fetch h/person 1 auth)
+
+(h/create h/company ...)
 ```
 
 ## License

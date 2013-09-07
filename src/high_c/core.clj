@@ -1,14 +1,13 @@
 (ns high-c.core
+  (:import [java.io StringWriter])
   (:require [clj-http.client :as client]
             [clojure.xml :as xml]
             [clojure.zip :as zip]
+            [clojure.data.xml :as dxml]
             [clojure.data.zip.xml :as d :only (attr text xml->)]))
 
 (defn- highrise-url [auth]
   (str "https://" (:domain auth) "/"))
-
-(def ^{:private true} company-endpoint "companies")
-(def ^{:private true} people-endpoint "people")
 
 (defn- basic-auth
   "Basic authentication headers"
@@ -23,29 +22,6 @@
       (java.io.ByteArrayInputStream.
         (.getBytes (:body content))))))
 
-(defn- search*
-  "Compose a basic search"
-  [endpoint q auth]
-  (from-xml
-    (client/get (str (highrise-url auth)
-                     endpoint "/search.xml?term=" q)
-                (basic-auth auth))))
-
-(defn- fetch*
-  "Compose a basic fetch"
-  [endpoint id auth]
-  (from-xml 
-    (client/get (str (highrise-url auth) endpoint "/" id ".xml")
-                (basic-auth auth))))
-
-(defn- fetch-by-company*
-  [endpoint id auth]
-  "Compose fetch collection by company."
-  (from-xml 
-    (client/get (str (highrise-url auth) company-endpoint "/"
-                     id "/" endpoint ".xml")
-                (basic-auth auth))))
-
 (defn- new-entities
   [tree f entity]
   (map f (d/xml-> tree entity)))
@@ -54,39 +30,50 @@
   [tree el]
   (first (d/xml-> tree el d/text)))
 
-(defprotocol HighriseItem
-  (url [this auth] "Return URL for Highrise item.") 
-  (search [this q auth] "Search Highrise by item name.")
-  (fetch [this id auth] "Get Highrise entity by id.")
-  (fetch-by-company [this id auth] "Get Highrise collection of entities by company."))
-
 (declare ->Company)
 (declare ->Person)
 
-(defn new-company
-  [tree]
-  (merge
-    (->Company)
-    {:id (Integer/parseInt (grab tree :id))
-     :name (grab tree :name)
-     :phone-number (grab tree :phone-number)}))
+(defmacro defnew
+  [n t]
+  `(defn ~n [attrs#]
+     (merge (~t) attrs#)))
+
+(defnew new-company ->Company)
+(defnew new-person ->Person)
+
+(defprotocol HighriseItem
+  (sym [this] "Symbol representing root XML element.")
+  (url [this auth] "Return URL for Highrise item.") 
+  (endpoint [this] "Return entity's endpoint.")
+  (hmap [this tree] "Map XML to entity.")
+  (rmap [this] "Map entity to XML."))
 
 (defrecord Company []
   HighriseItem
+  (sym [_] :company)
+  (hmap [_ tree]
+    {:id (Integer/parseInt (grab tree :id))
+     :name (grab tree :name)
+     :phone-number (grab tree :phone-number)})
+  (rmap [this]
+    (dxml/element
+      (sym this) {}
+      (dxml/element :name {} (:name this))
+      (dxml/element :contact-data {}
+                    (dxml/element :phone-numbers {}
+                                  (apply #(dxml/element :phone-number {}
+                                                        (dxml/element :number {} (:number %))
+                                                        (dxml/element :location {} (:location %)))
+                                         (map :phone-number (:phone-numbers (:contact-data this))))))))
+  (endpoint [_] "companies")
   (url [this auth]
-    (str (highrise-url auth) company-endpoint "/" (:id this)))
-  (search [_ q auth]
-    "Search companies. Returns a vector of companies."
-    (new-entities (search* company-endpoint q auth) new-company :company))
-  (fetch [_ id auth]
-    (new-company (fetch* company-endpoint id auth))))
+    (str (highrise-url auth) (endpoint this) "/" (:id this))))
 
-(def company (->Company))
-
-(defn new-person
-  [tree]
-  (merge
-    (->Person)
+(defrecord Person []
+  HighriseItem
+  (sym [_] :person)
+  (endpoint [_] "people") 
+  (hmap [_ tree]
     {:id (Integer/parseInt (grab tree :id))
      :first-name (grab tree :first-name)   
      :last-name (grab tree :last-name)   
@@ -95,19 +82,67 @@
                                                         :address (grab ea :address)
                                                         :location (grab ea :location)}})}}))
 
-(defrecord Person []
-  HighriseItem
-  (fetch-by-company [_ id auth]
-    (new-entities (fetch-by-company* people-endpoint id auth) new-person :person))
-  (fetch [_ id auth]
-    (new-person (fetch* people-endpoint id auth))))
-
 (def person (->Person))
 
-;; (fetch-by-company (->Person) (:id c) banzai-auth)
-;; 
+(def company (->Company))
+
+(defn fetch
+  "Compose a basic fetch"
+  [entity id auth]
+  (merge
+    entity
+    (hmap entity
+          (from-xml 
+            (client/get (str (highrise-url auth)
+                             (endpoint entity) "/" id ".xml")
+                        (basic-auth auth))))))
+
+(defn fetch-by-company
+  [entity id auth]
+  "Compose fetch collection by company."
+  (new-entities
+    (from-xml 
+      (client/get (str (highrise-url auth) (endpoint (->Company)) "/" id "/" (endpoint entity) ".xml")
+                  (basic-auth auth)))
+    #(merge entity (hmap entity %))
+    (sym entity)))
+
+(defn search
+  "Compose a basic search."
+  [entity q auth]
+  (new-entities
+    (from-xml
+      (client/get (str (highrise-url auth) (endpoint entity) "/search.xml?term=" q)
+                  (basic-auth auth)))
+    #(merge entity (hmap entity %))
+    (sym entity)))
+
+(defn- write-headers
+  [auth body]
+  (merge (basic-auth auth)
+         {:body body
+          :content-type "application/xml"}))
+
+(defn create
+  "Creates entity."
+  [entity auth]
+  (let [body (dxml/emit-str (rmap entity))]
+    (client/post (str (highrise-url auth) (endpoint entity) ".xml")
+                 (write-headers auth body))))
+
 ;; (require '[environ.core :refer :all])
 ;; (def banzai-auth {:domain (env :highrise-domain)
 ;;                   :token (env :highrise-token)})
-;; (def c (first (search company "Mountain America" banzai-auth)))
+;; (def c (first (search (->Company) "Mountain America" banzai-auth)))
 ;; (url c banzai-auth)
+;; (fetch-by-company (->Person) 66091540 banzai-auth)
+;; (fetch (->Person) 115622218 banzai-auth)
+;; (create (new-company {:name "Hometown Credit Union (Test 1)"}) banzai-auth)
+;; (try
+;;   (create (new-company {:name "Hometown Credit Union (Test 3)"
+;;                         :contact-data {:phone-numbers [{:phone-number {:number "333-333-3331"
+;;                                                                        :location "Work"}}]}})
+;;         banzai-auth)
+;;   (catch Exception e
+;;     (println (.toString e))))
+
