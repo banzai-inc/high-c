@@ -53,8 +53,7 @@
   (sym [_] :company)
   (hmap [_ tree]
     {:id (Integer/parseInt (grab tree :id))
-     :name (grab tree :name)
-     :phone-number (grab tree :phone-number)})
+     :name (grab tree :name)})
   (rmap [this]
     (dxml/element
       (sym this) {}
@@ -127,8 +126,12 @@
   "Creates entity."
   [entity auth]
   (let [body (dxml/emit-str (rmap entity))]
-    (client/post (str (highrise-url auth) (endpoint entity) ".xml")
-                 (write-headers auth body))))
+    (merge
+      entity
+      (hmap entity
+            (from-xml
+              (client/post (str (highrise-url auth) (endpoint entity) ".xml")
+                           (write-headers auth body)))))))
 
 ;; (require '[environ.core :refer :all])
 ;; (def banzai-auth {:domain (env :highrise-domain)
@@ -139,10 +142,9 @@
 ;; (fetch (->Person) 115622218 banzai-auth)
 ;; (create (new-company {:name "Hometown Credit Union (Test 1)"}) banzai-auth)
 ;; (try
-;;   (create (new-company {:name "Hometown Credit Union (Test 3)"
+;;   (create (new-company {:name "Hometown Credit Union (Test 4)"
 ;;                         :contact-data {:phone-numbers [{:phone-number {:number "333-333-3331"
 ;;                                                                        :location "Work"}}]}})
 ;;         banzai-auth)
 ;;   (catch Exception e
 ;;     (println (.toString e))))
-
