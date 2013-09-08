@@ -58,12 +58,13 @@
     (dxml/element
       (sym this) {}
       (dxml/element :name {} (:name this))
-      (dxml/element :contact-data {}
-                    (dxml/element :phone-numbers {}
-                                  (apply #(dxml/element :phone-number {}
-                                                        (dxml/element :number {} (:number %))
-                                                        (dxml/element :location {} (:location %)))
-                                         (map :phone-number (:phone-numbers (:contact-data this))))))))
+      (when (:contact-data this)
+        (dxml/element :contact-data {}
+                      (dxml/element :phone-numbers {}
+                                    (apply #(dxml/element :phone-number {}
+                                                          (dxml/element :number {} (:number %))
+                                                          (dxml/element :location {} (:location %)))
+                                           (map :phone-number (:phone-numbers (:contact-data this)))))))))
   (endpoint [_] "companies")
   (url [this auth]
     (str (highrise-url auth) (endpoint this) "/" (:id this))))

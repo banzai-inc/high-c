@@ -1,4 +1,4 @@
-(defproject high-c "0.2.4"
+(defproject high-c "0.2.5"
   :description "Interface for communicating with 37signals' Highrise API"
   :url "https://github.com/banzai-inc/high-c"
   :license {:name "Eclipse Public License"
